@@ -12,25 +12,25 @@ A arquitetura foi desenhada utilizando a abordagem "Diagrams as Code" com Mermai
 
 ```mermaid
 graph TD;
-    subgraph Fontes de Dados
-        A[MS Planner]
-        B[ServiceNow]
+    subgraph "Fontes de Dados"
+        A["MS Planner"]
+        B["ServiceNow"]
     end
 
-    subgraph Orquestração
-        C[Apache Airflow on Azure]
+    subgraph "Orquestração"
+        C["Apache Airflow on Azure"]
     end
 
     subgraph "Plataforma de Dados (Azure)"
-        D[Data Lake (Bronze)]
-        E[Azure Databricks]
-        F[Data Lake (Silver/Trusted)]
-        G[Azure Synapse SQL (Views)]
+        D["Data Lake (Bronze)"]
+        E["Azure Databricks"]
+        F["Data Lake (Silver/Trusted)"]
+        G["Azure Synapse SQL (Views)"]
     end
 
     subgraph "Consumo / Produtos de Dados"
-        H[Power BI]
-        I[Usuários via SQL]
+        H["Power BI"]
+        I["Usuários via SQL"]
     end
 
     %% Conexões
