@@ -3,9 +3,10 @@
 // =================================================================   
 
 // Parâmetro para o nome do projeto, usado para nomear os recursos.
+// RECURSOS DO AZURE TÊM REGRAS DE NOME, ESPECIALMENTE DE TAMANHO.
 // Usaremos um nome curto e sem caracteres especiais.
-@description('Prefixo para todos os recursos a serem criados.')
-param projectName string = 'tasksplannersnow'
+@description('Prefixo CURTO (máx 10 caracteres) para todos os recursos a serem criados.')
+param projectName string = 'tpsnow' // Abreviação de Tasks Planner Snow
 
 // Parâmetro para a localização. O padrão será a do grupo de recursos.
 @description('Localização geográfica onde os recursos serão criados.')
@@ -23,6 +24,7 @@ param keyVaultAdminObjectId string
 
 // O nome do nosso Key Vault. Nomes de Key Vault precisam ser únicos globalmente.
 // Vamos usar o nome do projeto + um sufixo único para garantir.
+// Com o projectName 'tpsnow' (6) + 'kv-' (3) + '-' (1) + uniqueString (13) = 23 caracteres. PERFEITO!
 var keyVaultName = 'kv-${projectName}-${uniqueString(resourceGroup().id)}'
 
 
