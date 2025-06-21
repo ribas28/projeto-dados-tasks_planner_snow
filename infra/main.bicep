@@ -1,5 +1,5 @@
 // =================================================================   
-// PARÂMETROS - Valores que passamos na hora do deploy
+// PARÂMETROS
 // =================================================================   
 
 @description('Prefixo CURTO (máx 10 caracteres) para todos os recursos a serem criados.')
@@ -13,19 +13,24 @@ param keyVaultAdminObjectId string
 
 
 // =================================================================   
-// VARIÁVEIS - Nomes e configurações que montamos dentro do arquivo
+// VARIÁVEIS
 // =================================================================   
 
 var keyVaultName = 'kv-${projectName}-${uniqueString(resourceGroup().id)}'
 var storageAccountName = 'st${projectName}${uniqueString(resourceGroup().id)}'
 
+// Nome do Workspace do Databricks. Precisa ser único globalmente.
+var databricksWorkspaceName = 'dbw-${projectName}-${uniqueString(resourceGroup().id)}'
+// Nome do Grupo de Recursos que o Databricks irá criar e gerenciar.
+var databricksManagedResourceGroupName = 'mrg-${projectName}-${uniqueString(resourceGroup().id)}'
+
 
 // =================================================================   
-// RECURSOS - A infraestrutura que será criada no Azure
+// RECURSOS
 // =================================================================   
 
-// Definição do nosso Key Vault
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
+  // ... (código do Key Vault continua o mesmo, sem alterações)
   name: keyVaultName
   location: location
   properties: {
@@ -48,8 +53,8 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   }
 }
 
-// Definição da nossa Conta de Armazenamento (Data Lake Gen2)
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+  // ... (código do Storage Account continua o mesmo, sem alterações)
   name: storageAccountName
   location: location
   sku: {
@@ -61,31 +66,44 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   }
 }
 
-// NOVOS RECURSOS: Contêineres dentro do Data Lake
-// Este é um recurso "filho" do storageAccount. Note o tipo e o nome.
-
-// Contêiner para a camada BRONZE (dados brutos)
 resource bronzeContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
-  // O nome é composto pelo nome da conta de armazenamento, /default/ e o nome do contêiner
+  // ... (código do contêiner bronze continua o mesmo, sem alterações)
   name: '${storageAccount.name}/default/bronze'
   properties: {
-    // Acesso público desabilitado por segurança.
     publicAccess: 'None'
   }
 }
 
-// Contêiner para a camada SILVER (dados limpos e transformados)
 resource silverContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
+  // ... (código do contêiner silver continua o mesmo, sem alterações)
   name: '${storageAccount.name}/default/silver'
   properties: {
     publicAccess: 'None'
   }
 }
 
+// NOVO RECURSO: Workspace do Azure Databricks
+resource databricksWorkspace 'Microsoft.Databricks/workspaces@2023-02-01' = {
+  name: databricksWorkspaceName
+  location: location
+  // O SKU 'premium' permite controle de acesso por usuário em notebooks, etc.
+  // Essencial para um ambiente colaborativo e seguro.
+  sku: {
+    name: 'premium'
+  }
+  properties: {
+    // Definimos aqui o nome do Resource Group que o Databricks vai criar e gerenciar.
+    managedResourceGroupId: subscriptionResourceId('Microsoft.Resources/resourceGroups', databricksManagedResourceGroupName)
+  }
+}
+
 
 // =================================================================   
-// SAÍDAS (OUTPUTS) - Valores que queremos que o deploy nos retorne
+// SAÍDAS (OUTPUTS)
 // =================================================================   
 
 @description('O nome da conta de armazenamento (Data Lake) criada.')
 output dataLakeName string = storageAccount.name
+
+@description('O nome do workspace do Databricks criado.')
+output databricksWorkspaceName string = databricksWorkspace.name
