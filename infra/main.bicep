@@ -17,10 +17,6 @@ param keyVaultAdminObjectId string
 // =================================================================   
 
 var keyVaultName = 'kv-${projectName}-${uniqueString(resourceGroup().id)}'
-
-// Variável para o nome da nossa conta de armazenamento (Data Lake).
-// Nomes de storage account precisam ser únicos globalmente, com letras minúsculas e números.
-// st (2) + tpsnow (6) + uniqueString (13) = 21 caracteres. Perfeito.
 var storageAccountName = 'st${projectName}${uniqueString(resourceGroup().id)}'
 
 
@@ -52,18 +48,37 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   }
 }
 
-// NOVO RECURSO: Definição da nossa Conta de Armazenamento (Data Lake Gen2)
+// Definição da nossa Conta de Armazenamento (Data Lake Gen2)
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   name: storageAccountName
   location: location
   sku: {
-    name: 'Standard_LRS' // LRS (Locally-redundant storage) é o mais barato e suficiente.
+    name: 'Standard_LRS'
   }
   kind: 'StorageV2'
   properties: {
-    // A linha abaixo é o que transforma uma conta de armazenamento comum
-    // em um Data Lake Gen2 com sistema de arquivos hierárquico.
     isHnsEnabled: true
+  }
+}
+
+// NOVOS RECURSOS: Contêineres dentro do Data Lake
+// Este é um recurso "filho" do storageAccount. Note o tipo e o nome.
+
+// Contêiner para a camada BRONZE (dados brutos)
+resource bronzeContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
+  // O nome é composto pelo nome da conta de armazenamento, /default/ e o nome do contêiner
+  name: '${storageAccount.name}/default/bronze'
+  properties: {
+    // Acesso público desabilitado por segurança.
+    publicAccess: 'None'
+  }
+}
+
+// Contêiner para a camada SILVER (dados limpos e transformados)
+resource silverContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
+  name: '${storageAccount.name}/default/silver'
+  properties: {
+    publicAccess: 'None'
   }
 }
 
