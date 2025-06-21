@@ -2,18 +2,12 @@
 // PARÂMETROS - Valores que passamos na hora do deploy
 // =================================================================   
 
-// Parâmetro para o nome do projeto, usado para nomear os recursos.
-// RECURSOS DO AZURE TÊM REGRAS DE NOME, ESPECIALMENTE DE TAMANHO.
-// Usaremos um nome curto e sem caracteres especiais.
 @description('Prefixo CURTO (máx 10 caracteres) para todos os recursos a serem criados.')
-param projectName string = 'tpsnow' // Abreviação de Tasks Planner Snow
+param projectName string = 'tpsnow' 
 
-// Parâmetro para a localização. O padrão será a do grupo de recursos.
 @description('Localização geográfica onde os recursos serão criados.')
 param location string = resourceGroup().location
 
-// Parâmetro para o ID do usuário que terá acesso total ao Key Vault.
-// Vamos passar o seu próprio ID de usuário aqui.
 @description('O Object ID do usuário ou principal que receberá todas as permissões no Key Vault.')
 param keyVaultAdminObjectId string
 
@@ -22,10 +16,12 @@ param keyVaultAdminObjectId string
 // VARIÁVEIS - Nomes e configurações que montamos dentro do arquivo
 // =================================================================   
 
-// O nome do nosso Key Vault. Nomes de Key Vault precisam ser únicos globalmente.
-// Vamos usar o nome do projeto + um sufixo único para garantir.
-// Com o projectName 'tpsnow' (6) + 'kv-' (3) + '-' (1) + uniqueString (13) = 23 caracteres. PERFEITO!
 var keyVaultName = 'kv-${projectName}-${uniqueString(resourceGroup().id)}'
+
+// Variável para o nome da nossa conta de armazenamento (Data Lake).
+// Nomes de storage account precisam ser únicos globalmente, com letras minúsculas e números.
+// st (2) + tpsnow (6) + uniqueString (13) = 21 caracteres. Perfeito.
+var storageAccountName = 'st${projectName}${uniqueString(resourceGroup().id)}'
 
 
 // =================================================================   
@@ -37,19 +33,15 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
   location: location
   properties: {
-    // ID do Tenant do seu Azure AD. O Bicep pega isso automaticamente.
     tenantId: subscription().tenantId
     sku: {
-      name: 'standard' // O SKU gratuito é suficiente para nosso projeto.
+      name: 'standard'
       family: 'A'
     }
-    // Política de acesso: QUEM pode fazer O QUÊ neste cofre.
     accessPolicies: [
       {
-        // O ID do usuário que passamos como parâmetro.
         objectId: keyVaultAdminObjectId
         tenantId: subscription().tenantId
-        // Permissões completas para chaves, segredos e certificados.
         permissions: {
           keys: ['all']
           secrets: ['all']
@@ -59,3 +51,26 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     ]
   }
 }
+
+// NOVO RECURSO: Definição da nossa Conta de Armazenamento (Data Lake Gen2)
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+  name: storageAccountName
+  location: location
+  sku: {
+    name: 'Standard_LRS' // LRS (Locally-redundant storage) é o mais barato e suficiente.
+  }
+  kind: 'StorageV2'
+  properties: {
+    // A linha abaixo é o que transforma uma conta de armazenamento comum
+    // em um Data Lake Gen2 com sistema de arquivos hierárquico.
+    isHnsEnabled: true
+  }
+}
+
+
+// =================================================================   
+// SAÍDAS (OUTPUTS) - Valores que queremos que o deploy nos retorne
+// =================================================================   
+
+@description('O nome da conta de armazenamento (Data Lake) criada.')
+output dataLakeName string = storageAccount.name
