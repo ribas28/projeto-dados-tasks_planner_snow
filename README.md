@@ -70,11 +70,11 @@ graph TD;
         end
     end
 
-    Groups -- "1. Permissão de Acesso<br/>(ACLs no Data Lake / GRANT em Views)" --> DataLake;
-    SP -- "2. Permissão de Escrita/Leitura<br/>(Storage Blob Data Contributor)" --> DataLake;
-    KeyVault -- "3. Armazena a Senha" --> SP;
-    Databricks -- "4. Lê a Senha do Cofre" --> KeyVault;
-    Users -- "5. São Membros" --> Groups;
+    Groups -- "1 Permissão de Acesso<br/>(ACLs no Data Lake / GRANT em Views)" --> DataLake;
+    SP -- "2 Permissão de Escrita/Leitura<br/>(Storage Blob Data Contributor)" --> DataLake;
+    KeyVault -- "3 Armazena a Senha" --> SP;
+    Databricks -- "4 Lê a Senha do Cofre" --> KeyVault;
+    Users -- "5 São Membros" --> Groups;
 ```
 
 ### 3. Processo de Negócio para Solicitação de Acesso
