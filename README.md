@@ -50,8 +50,8 @@ graph TD;
 ```
 
 ### 2. Arquitetura de Segurança
-    ```mermaid
-    graph TD;
+```mermaid
+graph TD;
     subgraph Tenant_A ["Tenant Pessoal / Data Center"]
         direction LR
         subgraph Assinatura_Azure ["Assinatura Azure com Créditos"]
@@ -75,11 +75,11 @@ graph TD;
     KeyVault -- "3. Armazena a Senha" --> SP;
     Databricks -- "4. Lê a Senha do Cofre" --> KeyVault;
     Users -- "5. São Membros" --> Groups;
-    ```
+```
 
 ### 3. Processo de Negócio para Solicitação de Acesso
-    ```mermaid
-    sequenceDiagram
+```mermaid
+sequenceDiagram
     actor Usuário
     participant ServiceNow
     actor Gerente
@@ -93,4 +93,4 @@ graph TD;
     LogicApp->>AAD: Faz chamada à API para<br/>adicionar Usuário ao grupo "grp-data-pmo"
     
     Note right of AAD: Permissão concedida instantaneamente!
-    ```
+```
