@@ -16,23 +16,23 @@ Este diagrama mostra o caminho que os dados percorrem, desde a origem até se to
 
 ```mermaid
 graph TD;
-    subgraph Fonte
+    subgraph Fonte_SNOW[Fonte de Dados]
         A[ServiceNow API]
     end
-    subgraph Orquestração
+    subgraph Orquestracao[Orquestração]
         B(Apache Airflow)
     end
-    subgraph Processamento
+    subgraph Processamento[Processamento]
         C(Azure Databricks)
     end
-    subgraph Armazenamento "Data Lake (no Tenant Pessoal)"
+    subgraph Armazenamento[Armazenamento: Data Lake (Tenant Pessoal)]
         D[Bronze Layer<br/>(Parquet)]
         E[Silver Layer<br/>(Parquet / Delta)]
     end
-    subgraph Camada de Acesso "SQL Layer"
+    subgraph CamadaAcesso[Camada de Acesso: SQL Layer]
         F[Views de Dados<br/>(Data Products)]
     end
-    subgraph Consumidores
+    subgraph Consumidores[Consumidores]
         G[Grupo PMO]
         H[Grupo Perf. Financeira]
         I[Ferramentas de BI]
@@ -48,9 +48,8 @@ graph TD;
     H -- Acessa View Específica --> F;
     I -- Conecta nas Views --> F;
 
-
     graph TD;
-    subgraph Tenant_Pessoal [Tenant Pessoal / Data Center]
+    subgraph Tenant_A [Tenant Pessoal / Data Center]
         direction LR
         subgraph Assinatura_Azure [Assinatura Azure com Créditos]
             DataLake[Data Lake / Views];
@@ -68,11 +67,11 @@ graph TD;
         end
     end
 
-    Groups -- 1. Permissão de Acesso<br/>(ACLs no Data Lake / GRANT em Views) --> DataLake;
-    SP -- 2. Permissão de Escrita/Leitura<br/>(Storage Blob Data Contributor) --> DataLake;
-    KeyVault -- 3. Armazena a Senha --> SP;
-    Databricks -- 4. Lê a Senha do Cofre --> KeyVault;
-    Users -- 5. São Membros --> Groups;
+    Groups -- "1. Permissão de Acesso<br/>(ACLs no Data Lake / GRANT em Views)" --> DataLake;
+    SP -- "2. Permissão de Escrita/Leitura<br/>(Storage Blob Data Contributor)" --> DataLake;
+    KeyVault -- "3. Armazena a Senha" --> SP;
+    Databricks -- "4. Lê a Senha do Cofre" --> KeyVault;
+    Users -- "5. São Membros" --> Groups;
 
 
     sequenceDiagram
@@ -89,5 +88,3 @@ graph TD;
     LogicApp->>AAD: Faz chamada à API para<br/>adicionar Usuário ao grupo "grp-data-pmo"
     
     Note right of AAD: Permissão concedida instantaneamente!
-
-    
