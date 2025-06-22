@@ -1,45 +1,49 @@
-# Projeto de Portfólio: Consolidar tasks do planner com do spm do service now
+# Projeto de Portfólio: Plataforma de Engenharia de Dados
 
-Este projeto demonstra a construção de uma plataforma de dados completa, desde a ingestão até o consumo, utilizando práticas modernas de Engenharia de Dados, DataOps e Infraestrutura como Código.
+Este projeto demonstra a construção de uma plataforma de dados de ponta a ponta, desde a ingestão da fonte de dados (ServiceNow) até a camada de consumo governada, utilizando práticas modernas de Engenharia de Dados, DataOps e arquitetura Multi-Tenant.
 
 ## 🎯 Objetivo
 
-O objetivo é integrar dados de gestão de projetos do **ServiceNow** e de gestão de tarefas do **MS Planner**. Os dados são processados e modelados para criar produtos de dados confiáveis, que podem ser consumidos por analistas e ferramentas de BI. A arquitetura segue os princípios do Data Mesh para promover autonomia e escalabilidade.
+O objetivo é ingerir dados de gestão de projetos do **ServiceNow**, processá-los e transformá-los em uma camada confiável (Silver), e então expor "Produtos de Dados" seguros para diferentes grupos de usuários (PMO e Performance Financeira). O acesso a esses produtos é solicitado e automatizado através de um fluxo de chamados no próprio ServiceNow, implementando um ciclo completo de governança de dados.
 
-## 🏗️ Arquitetura da Solução
+## 🏗️ Arquitetura Detalhada do Projeto
 
-A arquitetura foi desenhada utilizando a abordagem "Diagrams as Code" com Mermaid, permitindo que a documentação seja versionada junto com o código-fonte.
+A arquitetura do projeto é dividida em três visões complementares: o fluxo de dados, a estrutura de segurança e o processo de negócio para solicitação de acesso.
+
+### 1. Arquitetura de Dados (Fluxo de Dados)
+
+Este diagrama mostra o caminho que os dados percorrem, desde a origem até se tornarem informação útil para o consumidor final.
 
 ```mermaid
 graph TD;
-    subgraph "Fontes de Dados"
-        A["MS Planner"]
-        B["ServiceNow"]
+    subgraph Fonte
+        A[ServiceNow API]
+    end
+    subgraph Orquestração
+        B(Apache Airflow)
+    end
+    subgraph Processamento
+        C(Azure Databricks)
+    end
+    subgraph Armazenamento "Data Lake (no Tenant Pessoal)"
+        D[Bronze Layer<br/>(Parquet)]
+        E[Silver Layer<br/>(Parquet / Delta)]
+    end
+    subgraph Camada de Acesso "SQL Layer"
+        F[Views de Dados<br/>(Data Products)]
+    end
+    subgraph Consumidores
+        G[Grupo PMO]
+        H[Grupo Perf. Financeira]
+        I[Ferramentas de BI]
     end
 
-    subgraph "Orquestração"
-        C["Apache Airflow on Azure"]
-    end
-
-    subgraph "Plataforma de Dados (Azure)"
-        D["Data Lake (Bronze)"]
-        E["Azure Databricks"]
-        F["Data Lake (Silver/Trusted)"]
-        G["Azure Synapse SQL (Views)"]
-    end
-
-    subgraph "Consumo / Produtos de Dados"
-        H["Power BI"]
-        I["Usuários via SQL"]
-    end
-
-    %% Conexões
-    A -- "Ingestão via PythonOperator" --> C;
-    B -- "Ingestão via PythonOperator" --> C;
-    C -- "Grava dados brutos em" --> D;
-    C -- "Dispara Job de Transformação" --> E;
-    E -- "Lê de" --> D;
-    E -- "Grava dados limpos em" --> F;
-    G -- "Expõe Views sobre" --> F;
-    H -- "Acessa" --> G;
-    I -- "Acessa" --> G;
+    A -- Ingestão Agendada --> B;
+    B -- Dispara Job de Processamento --> C;
+    C -- Grava Dados Brutos --> D;
+    C -- Lê Dados Brutos --> D;
+    C -- Grava Dados Limpos --> E;
+    F -- Lê Dados da Camada Silver --> E;
+    G -- Acessa View Específica --> F;
+    H -- Acessa View Específica --> F;
+    I -- Conecta nas Views --> F;
