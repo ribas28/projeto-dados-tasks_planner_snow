@@ -25,11 +25,11 @@ graph TD;
     subgraph Processamento[Processamento]
         C(Azure Databricks)
     end
-    subgraph Armazenamento[Armazenamento: Data Lake (Tenant Pessoal)]
+    subgraph Armazenamento[Armazenamento - Data Lake (Tenant Pessoal)]
         D[Bronze Layer<br/>(Parquet)]
         E[Silver Layer<br/>(Parquet / Delta)]
     end
-    subgraph CamadaAcesso[Camada de Acesso: SQL Layer]
+    subgraph CamadaAcesso[Camada de Acesso - SQL Layer]
         F[Views de Dados<br/>(Data Products)]
     end
     subgraph Consumidores[Consumidores]
