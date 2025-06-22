@@ -16,34 +16,34 @@ Este diagrama mostra o caminho que os dados percorrem, desde a origem até se to
 
 ```mermaid
 graph TD;
-    subgraph Fonte_SNOW[Fonte de Dados]
-        A[ServiceNow API]
+    subgraph Fonte_SNOW["Fonte de Dados"]
+        A["ServiceNow API"]
     end
-    subgraph Orquestracao[Orquestração]
-        B(Apache Airflow)
+    subgraph Orquestracao["Orquestração"]
+        B("Apache Airflow")
     end
-    subgraph Processamento[Processamento]
-        C(Azure Databricks)
+    subgraph Processamento["Processamento"]
+        C("Azure Databricks")
     end
-    subgraph Armazenamento[Armazenamento - Data Lake (Tenant Pessoal)]
-        D[Bronze Layer<br/>(Parquet)]
-        E[Silver Layer<br/>(Parquet / Delta)]
+    subgraph Armazenamento["Armazenamento - Data Lake (Tenant Pessoal)"]
+        D["Bronze Layer<br/>(Parquet)"]
+        E["Silver Layer<br/>(Parquet / Delta)"]
     end
-    subgraph CamadaAcesso[Camada de Acesso - SQL Layer]
-        F[Views de Dados<br/>(Data Products)]
+    subgraph CamadaAcesso["Camada de Acesso - SQL Layer"]
+        F["Views de Dados<br/>(Data Products)"]
     end
-    subgraph Consumidores[Consumidores]
-        G[Grupo PMO]
-        H[Grupo Perf. Financeira]
-        I[Ferramentas de BI]
+    subgraph Consumidores["Consumidores"]
+        G["Grupo PMO"]
+        H["Grupo Perf. Financeira"]
+        I["Ferramentas de BI"]
     end
 
-    A -- Ingestão Agendada --> B;
-    B -- Dispara Job de Processamento --> C;
-    C -- Grava Dados Brutos --> D;
-    C -- Lê Dados Brutos --> D;
-    C -- Grava Dados Limpos --> E;
-    F -- Lê Dados da Camada Silver --> E;
-    G -- Acessa View Específica --> F;
-    H -- Acessa View Específica --> F;
-    I -- Conecta nas Views --> F;
+    A -- "Ingestão Agendada" --> B;
+    B -- "Dispara Job de Processamento" --> C;
+    C -- "Grava Dados Brutos" --> D;
+    C -- "Lê Dados Brutos" --> D;
+    C -- "Grava Dados Limpos" --> E;
+    F -- "Lê Dados da Camada Silver" --> E;
+    G -- "Acessa View Específica" --> F;
+    H -- "Acessa View Específica" --> F;
+    I -- "Conecta nas Views" --> F;
