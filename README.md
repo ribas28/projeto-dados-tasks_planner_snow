@@ -47,3 +47,47 @@ graph TD;
     G -- Acessa View Específica --> F;
     H -- Acessa View Específica --> F;
     I -- Conecta nas Views --> F;
+
+
+    graph TD;
+    subgraph Tenant_Pessoal [Tenant Pessoal / Data Center]
+        direction LR
+        subgraph Assinatura_Azure [Assinatura Azure com Créditos]
+            DataLake[Data Lake / Views];
+            Databricks(Databricks Workspace);
+            KeyVault(Azure Key Vault);
+        end
+    end
+
+    subgraph Tenant_M365 [Tenant M365 / Escritório]
+        direction LR
+        subgraph Azure_AD [Azure AD / Entra ID]
+            Users[Usuários Finais];
+            Groups[Grupos de Segurança<br/>grp-data-pmo<br/>grp-data-finance];
+            SP[Service Principal<br/>sp-databricks-tpsnow];
+        end
+    end
+
+    Groups -- 1. Permissão de Acesso<br/>(ACLs no Data Lake / GRANT em Views) --> DataLake;
+    SP -- 2. Permissão de Escrita/Leitura<br/>(Storage Blob Data Contributor) --> DataLake;
+    KeyVault -- 3. Armazena a Senha --> SP;
+    Databricks -- 4. Lê a Senha do Cofre --> KeyVault;
+    Users -- 5. São Membros --> Groups;
+
+
+    sequenceDiagram
+    actor Usuário
+    participant ServiceNow
+    actor Gerente
+    participant LogicApp as Azure Logic App
+    participant AAD as Azure AD (Tenant M365)
+
+    Usuário->>ServiceNow: Abre chamado "Solicitar Acesso<br/>ao Produto de Dados PMO"
+    ServiceNow->>Gerente: Notifica sobre pendência de aprovação
+    Gerente->>ServiceNow: Aprova o chamado
+    ServiceNow-->>LogicApp: Dispara gatilho "Chamado Aprovado" via Webhook
+    LogicApp->>AAD: Faz chamada à API para<br/>adicionar Usuário ao grupo "grp-data-pmo"
+    
+    Note right of AAD: Permissão concedida instantaneamente!
+
+    
