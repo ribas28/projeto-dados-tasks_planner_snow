@@ -52,29 +52,43 @@ graph TD;
 ### 2. Arquitetura de Segurança
 ```mermaid
 graph TD;
-    subgraph Tenant_A ["Tenant Pessoal / Data Center"]
+    subgraph Tenant_Pessoal [Tenant Pessoal / Data Center]
         direction LR
-        subgraph Assinatura_Azure ["Assinatura Azure com Créditos"]
-            DataLake["Data Lake / Views"];
-            Databricks("Databricks Workspace");
-            KeyVault("Azure Key Vault");
+        subgraph Assinatura_Azure [Assinatura Azure com Créditos]
+            DataLake[Data Lake];
+            Databricks(Databricks Workspace);
+            KeyVault(Azure Key Vault);
+            Connector["Access Connector<br/>(Nosso 'Embaixador')"];
         end
     end
 
-    subgraph Tenant_M365 ["Tenant M365 / Escritório"]
+    subgraph Tenant_M365 [Tenant M365 / Escritório]
         direction LR
-        subgraph Azure_AD ["Azure AD / Entra ID"]
-            Users["Usuários Finais"];
-            Groups["Grupos de Segurança<br/>grp-data-pmo<br/>grp-data-finance"];
-            SP["Service Principal<br/>sp-databricks-tpsnow"];
+        subgraph Azure_AD [Azure AD / Entra ID]
+            Users[Usuários Finais];
+            Groups[Grupos de Segurança<br/>grp-data-pmo<br/>grp-data-finance];
+            SP["Service Principal<br/>(Para jobs específicos<br/>e autenticação legada)"];
         end
     end
+    
+    subgraph UnityCatalog [Dentro do Databricks]
+        direction LR
+        Credencial["Storage Credential<br/>(Usa o Embaixador)"];
+        Localizacao["External Location<br/>(Usa a Credencial)"];
+    end
 
-    Groups -- "1 Permissão de Acesso<br/>(ACLs no Data Lake / GRANT em Views)" --> DataLake;
-    SP -- "2 Permissão de Escrita/Leitura<br/>(Storage Blob Data Contributor)" --> DataLake;
-    KeyVault -- "3 Armazena a Senha" --> SP;
-    Databricks -- "4 Lê a Senha do Cofre" --> KeyVault;
-    Users -- "5 São Membros" --> Groups;
+    %% Fluxo de Permissões do Unity Catalog (O Novo Modelo)
+    Connector -- "1. Permissão de Acesso ao Storage<br/>(Storage Blob Data Contributor)" --> DataLake;
+    Credencial -- "2. Aponta Para" --> Connector;
+    Localizacao -- "3. Registra o Caminho e Usa" --> Credencial;
+    
+    %% Fluxo de Permissões de Usuários
+    Groups -- "4. Permissão aos Dados<br/>(GRANT SELECT nas Tabelas/Views)" --> Databricks;
+    Users -- "5. São Membros" --> Groups;
+
+    %% Fluxo de Segredos para outras automações
+    KeyVault -- "6. Armazena Segredos<br/>(API SNOW, etc.)" --> SP;
+    Databricks -- "7. Lê Segredos<br/>(Para notebooks específicos)" --> KeyVault;
 ```
 
 ### 3. Processo de Negócio para Solicitação de Acesso
