@@ -52,7 +52,7 @@ graph TD;
 ### 2. Arquitetura de Segurança
 ```mermaid
 graph TD;
-    subgraph Tenant_Pessoal [Tenant Pessoal / Data Center]
+    subgraph Tenant_A [Tenant Pessoal / Data Center]
         direction LR
         subgraph Assinatura_Azure [Assinatura Azure com Créditos]
             DataLake[Data Lake / Views];
@@ -77,18 +77,18 @@ graph TD;
         Localizacao["External Location<br/>(Usa a Credencial)"];
     end
 
-    %% Fluxo de Permissões do Unity Catalog (O Novo Modelo)
-    Connector -- "1. Permissão de Acesso ao Storage<br/>(Storage Blob Data Contributor)" --> DataLake;
-    Credencial -- "2. Aponta Para" --> Connector;
-    Localizacao -- "3. Registra o Caminho e Usa" --> Credencial;
+    %% Fluxo de Permissões do Unity Catalog
+    Connector -- "Permissão de Acesso ao Storage<br/>(Storage Blob Data Contributor)" --> DataLake;
+    Credencial -- "Aponta Para" --> Connector;
+    Localizacao -- "Registra o Caminho e Usa" --> Credencial;
     
     %% Fluxo de Permissões de Usuários
-    Groups -- "4. Permissão aos Dados<br/>(GRANT SELECT nas Tabelas/Views)" --> Databricks;
-    Users -- "5. São Membros" --> Groups;
+    Groups -- "Permissão aos Dados<br/>(GRANT SELECT nas Tabelas/Views)" --> Databricks;
+    Users -- "São Membros de" --> Groups;
 
     %% Fluxo de Segredos para outras automações
-    KeyVault -- "6. Armazena Segredos<br/>(API SNOW, etc.)" --> SP;
-    Databricks -- "7. Lê Segredos<br/>(Para notebooks específicos)" --> KeyVault;
+    KeyVault -- "Armazena Segredos<br/>(API SNOW, etc.)" --> SP;
+    Databricks -- "Lê Segredos<br/>(Para notebooks específicos)" --> KeyVault;
 ```
 
 ### 3. Processo de Negócio para Solicitação de Acesso
