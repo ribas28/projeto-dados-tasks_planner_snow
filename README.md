@@ -55,10 +55,10 @@ graph TD;
     subgraph Tenant_Pessoal [Tenant Pessoal / Data Center]
         direction LR
         subgraph Assinatura_Azure [Assinatura Azure com Créditos]
-            DataLake[Data Lake];
+            DataLake[Data Lake / Views];
             Databricks(Databricks Workspace);
             KeyVault(Azure Key Vault);
-            Connector["Access Connector<br/>(Nosso 'Embaixador')"];
+            Connector["Access Connector for<br/>Azure Databricks"];
         end
     end
 
@@ -73,7 +73,7 @@ graph TD;
     
     subgraph UnityCatalog [Dentro do Databricks]
         direction LR
-        Credencial["Storage Credential<br/>(Usa o Embaixador)"];
+        Credencial["Storage Credential<br/>(Usa o Access Connector)"];
         Localizacao["External Location<br/>(Usa a Credencial)"];
     end
 
