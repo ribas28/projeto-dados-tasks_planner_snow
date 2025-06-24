@@ -52,43 +52,33 @@ graph TD;
 ### 2. Arquitetura de Segurança
 ```mermaid
 graph TD;
-    subgraph Tenant_A [Tenant Pessoal / Data Center]
+    subgraph Tenant_Unificado [Tenant Pessoal Unificado (Data Center + Escritório)]
         direction LR
+
         subgraph Assinatura_Azure [Assinatura Azure com Créditos]
             DataLake[Data Lake / Views];
             Databricks(Databricks Workspace);
             KeyVault(Azure Key Vault);
-            Connector["Access Connector for<br/>Azure Databricks"];
+            Connector["Access Connector"];
         end
-    end
 
-    subgraph Tenant_M365 [Tenant M365 / Escritório]
-        direction LR
         subgraph Azure_AD [Azure AD / Entra ID]
             Users[Usuários Finais];
             Groups[Grupos de Segurança<br/>grp-data-pmo<br/>grp-data-finance];
-            SP["Service Principal<br/>(Para jobs específicos<br/>e autenticação legada)"];
+            SP["Service Principal<br/>(Para automações)"];
         end
+
     end
     
-    subgraph UnityCatalog [Dentro do Databricks]
-        direction LR
-        Credencial["Storage Credential<br/>(Usa o Access Connector)"];
-        Localizacao["External Location<br/>(Usa a Credencial)"];
-    end
-
-    %% Fluxo de Permissões do Unity Catalog
-    Connector -- "Permissão de Acesso ao Storage<br/>(Storage Blob Data Contributor)" --> DataLake;
-    Credencial -- "Aponta Para" --> Connector;
-    Localizacao -- "Registra o Caminho e Usa" --> Credencial;
+    %% Fluxo de Permissões de Infraestrutura
+    Connector -- "Permissão ao Storage" --> DataLake;
+    KeyVault -- "Armazena Segredos" --> SP;
+    Databricks -- "Usa Credenciais de" --> Connector;
+    Databricks -- "Lê Segredos para Jobs" --> KeyVault;
     
     %% Fluxo de Permissões de Usuários
-    Groups -- "Permissão aos Dados<br/>(GRANT SELECT nas Tabelas/Views)" --> Databricks;
+    Groups -- "Permissão aos Dados<br/>(GRANT SELECT)" --> Databricks;
     Users -- "São Membros de" --> Groups;
-
-    %% Fluxo de Segredos para outras automações
-    KeyVault -- "Armazena Segredos<br/>(API SNOW, etc.)" --> SP;
-    Databricks -- "Lê Segredos<br/>(Para notebooks específicos)" --> KeyVault;
 ```
 
 ### 3. Processo de Negócio para Solicitação de Acesso
