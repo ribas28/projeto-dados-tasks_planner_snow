@@ -52,33 +52,30 @@ graph TD;
 ### 2. Arquitetura de Segurança
 ```mermaid
 graph TD;
-    subgraph Tenant_Unificado [Tenant Pessoal Unificado (Data Center + Escritório)]
+    subgraph TenantUnificado [Tenant Pessoal Unificado]
         direction LR
 
-        subgraph Assinatura_Azure [Assinatura Azure com Créditos]
-            DataLake[Data Lake / Views];
-            Databricks(Databricks Workspace);
-            KeyVault(Azure Key Vault);
+        subgraph AssinaturaAzure [Assinatura Azure e Recursos]
+            DataLake["Data Lake e Views"];
+            Databricks("Databricks Workspace");
+            KeyVault("Azure Key Vault");
             Connector["Access Connector"];
         end
 
-        subgraph Azure_AD [Azure AD / Entra ID]
-            Users[Usuários Finais];
-            Groups[Grupos de Segurança<br/>grp-data-pmo<br/>grp-data-finance];
-            SP["Service Principal<br/>(Para automações)"];
+        subgraph AzureAD [Azure AD - Entra ID]
+            Users["Usuarios Finais"];
+            Groups["Grupos de Seguranca<br/>grp-data-pmo<br/>grp-data-finance"];
+            SP["Service Principal<br/>(Para automacoes)"];
         end
-
     end
     
-    %% Fluxo de Permissões de Infraestrutura
-    Connector -- "Permissão ao Storage" --> DataLake;
-    KeyVault -- "Armazena Segredos" --> SP;
-    Databricks -- "Usa Credenciais de" --> Connector;
-    Databricks -- "Lê Segredos para Jobs" --> KeyVault;
-    
-    %% Fluxo de Permissões de Usuários
-    Groups -- "Permissão aos Dados<br/>(GRANT SELECT)" --> Databricks;
-    Users -- "São Membros de" --> Groups;
+    %% Fluxo de Permissoes
+    Groups -- "Permissao aos Dados (GRANT SELECT)" --> Databricks;
+    Users -- "Sao Membros de" --> Groups;
+    Connector -- "Permissao ao Storage" --> DataLake;
+    Databricks -- "Usa Credencial de" --> Connector;
+    Databricks -- "Le Segredos para Jobs" --> KeyVault;
+    KeyVault -- "Armazena Segredos de" --> SP;
 ```
 
 ### 3. Processo de Negócio para Solicitação de Acesso
